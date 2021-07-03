@@ -2,17 +2,6 @@ language: python
 python:
   - 3.6
 
-# Update pip to the latest version
-before_install:
-  - python --version
-  - pip install -U pip
-
-install:
-  - pip install -r requirements.txt
-
-script:
-  - flake8 . --exit-zero
-
 deploy:
   provider: pypi
   username: "__token__"
