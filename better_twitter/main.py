@@ -1,11 +1,14 @@
 from better_twitter import block_from_file
 import argparse
 import configparser
-from os import path
+from os import path, mkdir
 import twitter
 
 
 CRED_WARNING_MSG = "You first need to enter the credentials received from Twitter."
+CONFIG_DIR = "~/.better-twitter"
+CONFIG_FILE = "config.ini"
+
 
 def cursive_command():
     api = load_api()
@@ -16,7 +19,7 @@ def cursive_command():
 
 def load_api():
     config = configparser.ConfigParser()
-    config_path = path.expanduser("~/.better-twitter/config.ini")
+    config_path = path.expanduser(path.join(CONFIG_DIR, CONFIG_FILE))
     if path.exists(config_path):
         config.read(config_path)
     else:
@@ -25,6 +28,9 @@ def load_api():
         config["DEFAULT"]["consumer_secret"] = input("Consumer Secret: ")
         config["DEFAULT"]["access_token_key"] = input("Access Token Key: ")
         config["DEFAULT"]["access_token_secret"] = input("Access Token Secret: ")
+
+        if not path.exists(path.expanduser(CONFIG_DIR)):
+            mkdir(path.expanduser(CONFIG_DIR))
 
         with open(config_path, "w") as config_file:
             config.write(config_file)
@@ -86,7 +92,6 @@ def parse():
 
 
 if __name__ == '__main__':
-    
     api = load_api()
     args = parse()
     if args.block_file:
