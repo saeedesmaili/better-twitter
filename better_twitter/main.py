@@ -4,15 +4,33 @@ from os import path, mkdir
 import sqlite3
 import twitter
 import pandas as pd
-from tweets import block_from_file
-from configs import CONFIG_DIR, CRED_WARNING_MSG, CONFIG_FILE, DB_FILE
+import pendulum as pn
+import time
+
+
+CRED_WARNING_MSG = "You first need to enter the credentials received from Twitter."
+CONFIG_DIR = "~/.better-twitter"
+CONFIG_FILE = "config.ini"
+DB_FILE = "data.db"
 
 
 def cursive_command():
     api = load_api()
+
+    db_path = path.expanduser(path.join(CONFIG_DIR, DB_FILE))
+    con = sqlite3.connect(db_path)
+
+    try:
+        df_accounts = pd.read_sql("select * from accounts", con=con)
+    except:
+        df_accounts = pd.DataFrame(columns=["user_id", "screen_name"])
+    df_accounts["user_id"] = df_accounts["user_id"].astype(int)
+
     args = parse()
     if args.block_file:
-        block_from_file(api, args.block_file)
+        block_from_file(api=api, file_path=args.block_file, df_accounts=df_accounts)
+    elif args.update_api:
+        update_api()
 
 
 def load_api():
@@ -90,20 +108,64 @@ def parse():
     return parser.parse_args()
 
 
-if __name__ == '__main__':
-    api = load_api()
-
+def update_db(data, table_name, columns=[]):
     db_path = path.expanduser(path.join(CONFIG_DIR, DB_FILE))
     con = sqlite3.connect(db_path)
 
     try:
-        df_accounts = pd.read_sql("select * from accounts", con=con)
+        df = pd.read_sql(f"select * from {table_name}", con=con)
     except:
-        df_accounts = pd.DataFrame(columns=["user_id", "screen_name"])
-    df_accounts["user_id"] = df_accounts["user_id"].astype(int)
+        df = pd.DataFrame(columns=columns)
 
-    args = parse()
-    if args.block_file:
-        block_from_file(api=api, file_path=args.block_file, df_accounts=df_accounts)
-    elif args.update_api:
-        update_api()
+    df = df.append(data, ignore_index=True)
+    df.to_sql(table_name, con=con, index=False, if_exists="replace")
+    return df.shape[0]
+
+
+def block_from_file(api, file_path, df_accounts):
+    df = pd.read_csv(file_path)
+    if "user_id" not in df.columns or "screen_name" not in df.columns:
+        raise Exception("The file should have both user_id and screen_name columns.")
+    df["user_id"] = df["user_id"].astype(int)
+    print(f"Blocking {df.shape[0]} users from file ...")
+    for i, row in df.iterrows():
+        if row["user_id"] in df_accounts["user_id"].values:
+            print(f"User is already blocked: {row['screen_name']}")
+            continue
+        try:
+            response = api.CreateBlock(user_id=row.user_id)
+        except twitter.error.TwitterError as e:
+            if e.message[0]["code"] == 50:  # User not found
+                print(f"User not found: {row['screen_name']}")
+                data = {
+                    "user_id": row["user_id"],
+                    "last_checked": str(pn.now()),
+                    "comment": "User not found",
+                }
+                update_db(data, "accounts")
+            elif e.message[0]["code"] == 88:  # rate limit
+                print("API rate limit. Waiting for 5 minutes ...")
+                time.sleep(300)
+                pass
+            elif e.message[0]["code"] == 89:  # Invalid or expired token
+                print(e.message[0]["message"])
+                print("You need to add valid tokens with following command first:\nbetter-twitter --update-api")
+                return None
+            else:
+                raise Exception(e.message)
+        else:
+            data = {
+                "user_id": row["user_id"],
+                "screen_name": response.screen_name,
+                "followers_count": response.followers_count,
+                "followings_count": response.friends_count,
+                "account_created_at": response.created_at,
+                "last_checked": str(pn.now()),
+            }
+            update_db(data, "accounts")
+            print(f"Blocked user: {row.screen_name}")
+    return None
+
+
+if __name__ == '__main__':
+    cursive_command()
