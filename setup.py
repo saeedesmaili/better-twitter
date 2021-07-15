@@ -3,18 +3,18 @@ from codecs import open
 from os import path
 
 HERE = path.abspath(path.dirname(__file__))
-with open(path.join(HERE, 'README.md'), encoding='utf-8') as f:
+with open(path.join(HERE, "README.md"), encoding="utf-8") as f:
     long_description = f.read()
 
 setup(
     name="better-twitter",
-    version="0.0.10",
+    version="0.0.11",
     description="A python package to block fake and toxic twitter accounts in an automated and easy way.",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/saeedesmaili/better-twitter",
     author="Saeed Esmaili",
-    author_email='me@saeedesmaili.com',
+    author_email="me@saeedesmaili.com",
     license="MIT license",
     classifiers=[
         "Intended Audience :: Developers",
@@ -34,5 +34,5 @@ setup(
     keywords="twitter",
     packages=["better_twitter"],
     include_package_data=True,
-    install_requires=["pandas", "python-twitter"]
+    install_requires=["pandas", "python-twitter", "pendulum"]
 )

@@ -1,16 +1,11 @@
-from better_twitter import block_from_file
 import argparse
 import configparser
 from os import path, mkdir
 import sqlite3
 import twitter
 import pandas as pd
-
-
-CRED_WARNING_MSG = "You first need to enter the credentials received from Twitter."
-CONFIG_DIR = "~/.better-twitter"
-CONFIG_FILE = "config.ini"
-DB_FILE = "data.db"
+from utils.tweets import block_from_file
+from configs.config import CONFIG_DIR, CRED_WARNING_MSG, CONFIG_FILE, DB_FILE
 
 
 def cursive_command():
@@ -18,15 +13,6 @@ def cursive_command():
     args = parse()
     if args.block_file:
         block_from_file(api, args.block_file)
-
-
-def update_db(df, data, table_name):
-    db_path = path.expanduser(path.join(CONFIG_DIR, DB_FILE))
-    con = sqlite3.connect(db_path)
-
-    df = df.append(data, ignore_index=True)
-    df.to_sql(table_name, con=con, index=False, if_exists="replace")
-    return df.shape[0]
 
 
 def load_api():
@@ -117,6 +103,6 @@ if __name__ == '__main__':
 
     args = parse()
     if args.block_file:
-        block_from_file(api=api, con=con, file_path=args.block_file, df_accounts=df_accounts)
+        block_from_file(api=api, file_path=args.block_file, df_accounts=df_accounts)
     elif args.update_api:
         update_api()
