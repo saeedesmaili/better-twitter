@@ -49,7 +49,8 @@ def load_api():
 
 def update_api():
     config = configparser.ConfigParser()
-    config_path = path.expanduser("~/.better-twitter/config.ini")
+    config_path = path.expanduser(path.join(CONFIG_DIR, CONFIG_FILE))
+    config.read(config_path)
     new_consumer_key = input("Consumer Key (leave blank if you don't want to update it): ")
     if new_consumer_key:
         config["DEFAULT"]["consumer_key"] = new_consumer_key
