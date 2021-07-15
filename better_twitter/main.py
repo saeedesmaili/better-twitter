@@ -4,6 +4,7 @@ import configparser
 from os import path, mkdir
 import sqlite3
 import twitter
+import pandas as pd
 
 
 CRED_WARNING_MSG = "You first need to enter the credentials received from Twitter."
@@ -97,10 +98,16 @@ if __name__ == '__main__':
     api = load_api()
 
     db_path = path.expanduser(path.join(CONFIG_DIR, DB_FILE))
-    conn = sqlite3.connect(db_path)
+    con = sqlite3.connect(db_path)
+
+    try:
+        df_accounts = pd.read_sql("select * from accounts", con=con)
+    except:
+        df_accounts = pd.DataFrame(columns=["user_id", "screen_name"])
+    df_accounts["user_id"] = df_accounts["user_id"].astype(int)
     
     args = parse()
     if args.block_file:
-        block_from_file(api, args.block_file)
+        block_from_file(api=api, con=con, file_path=args.block_file, df_accounts=df_accounts)
     elif args.update_api:
         update_api()
