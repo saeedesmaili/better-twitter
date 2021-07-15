@@ -2,12 +2,14 @@ from better_twitter import block_from_file
 import argparse
 import configparser
 from os import path, mkdir
+import sqlite3
 import twitter
 
 
 CRED_WARNING_MSG = "You first need to enter the credentials received from Twitter."
 CONFIG_DIR = "~/.better-twitter"
 CONFIG_FILE = "config.ini"
+DB_FILE = "data.db"
 
 
 def cursive_command():
@@ -93,6 +95,10 @@ def parse():
 
 if __name__ == '__main__':
     api = load_api()
+
+    db_path = path.expanduser(path.join(CONFIG_DIR, DB_FILE))
+    conn = sqlite3.connect(db_path)
+    
     args = parse()
     if args.block_file:
         block_from_file(api, args.block_file)

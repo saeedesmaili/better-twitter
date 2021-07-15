@@ -154,3 +154,5 @@ cython_debug/
 # Ignore all local history of files
 .history
 .ionide
+
+deploy_todo.md
