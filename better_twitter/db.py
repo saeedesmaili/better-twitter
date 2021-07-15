@@ -1,7 +1,7 @@
 import sqlite3
 import pandas as pd
 from os import path
-from . import CONFIG_DIR, DB_FILE
+from configs import CONFIG_DIR, DB_FILE
 
 
 def update_db(data, table_name, columns=[]):

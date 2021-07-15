@@ -2,7 +2,7 @@ import time
 import twitter
 import pandas as pd
 import pendulum as pn
-from .db import update_db
+from db import update_db
 
 
 def block_from_file(api, file_path, df_accounts):
@@ -47,3 +47,4 @@ def block_from_file(api, file_path, df_accounts):
             }
             update_db(data, "accounts")
             print(f"Blocked user: {row.screen_name}")
+    return None

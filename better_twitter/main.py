@@ -4,8 +4,8 @@ from os import path, mkdir
 import sqlite3
 import twitter
 import pandas as pd
-from utils.tweets import block_from_file
-from configs.config import CONFIG_DIR, CRED_WARNING_MSG, CONFIG_FILE, DB_FILE
+from tweets import block_from_file
+from configs import CONFIG_DIR, CRED_WARNING_MSG, CONFIG_FILE, DB_FILE
 
 
 def cursive_command():
