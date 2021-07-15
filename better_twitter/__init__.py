@@ -1,1 +1,2 @@
 from better_twitter.utils import block_from_file
+from better_twitter.main import update_db

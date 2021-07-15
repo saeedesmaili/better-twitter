@@ -20,6 +20,15 @@ def cursive_command():
         block_from_file(api, args.block_file)
 
 
+def update_db(df, data, table_name):
+    db_path = path.expanduser(path.join(CONFIG_DIR, DB_FILE))
+    con = sqlite3.connect(db_path)
+
+    df = df.append(data, ignore_index=True)
+    df.to_sql(table_name, con=con, index=False, if_exists="replace")
+    return df.shape[0]
+
+
 def load_api():
     config = configparser.ConfigParser()
     config_path = path.expanduser(path.join(CONFIG_DIR, CONFIG_FILE))
@@ -105,7 +114,7 @@ if __name__ == '__main__':
     except:
         df_accounts = pd.DataFrame(columns=["user_id", "screen_name"])
     df_accounts["user_id"] = df_accounts["user_id"].astype(int)
-    
+
     args = parse()
     if args.block_file:
         block_from_file(api=api, con=con, file_path=args.block_file, df_accounts=df_accounts)

@@ -1,6 +1,9 @@
+import time
 import twitter
 import pandas as pd
 import pendulum as pn
+from better_twitter import update_db
+
 
 
 def block_from_file(api, con, file_path, df_accounts):
@@ -15,18 +18,28 @@ def block_from_file(api, con, file_path, df_accounts):
             continue
         try:
             response = api.CreateBlock(user_id=row.user_id)
-            df_accounts = df_accounts.append({
-                "user_id": row["user_id"],
-                "screen_name": response.screen_name,
-                "followers_count": response.followers_count,
-                "followings_count": response.friends_count,
-                "account_created_at": response.created_at,
-                "last_checked": str(pn.now()),                
-            }, ignore_index=True)
-            df_accounts.to_sql("accounts", con=con, index=False, if_exists="replace")
-            print(f"Blocked user: {row.screen_name}")
         except twitter.error.TwitterError as e:
             if e.message[0]["code"] == 50:  # User not found
+                data = {
+                    "user_id": row["user_id"],
+                    "last_checked": str(pn.now()),
+                    "comment": "User not found",
+                }
+                update_db(df, data, "accounts")
+            elif e.message[0]["code"] == 88:  # rate limit
+                print("API rate limit. Waiting for 5 minutes ...")
+                time.sleep(300)
                 pass
             else:
                 raise Exception(e.message)
+
+        data = {
+            "user_id": row["user_id"],
+            "screen_name": response.screen_name,
+            "followers_count": response.followers_count,
+            "followings_count": response.friends_count,
+            "account_created_at": response.created_at,
+            "last_checked": str(pn.now()),
+        }
+        update_db(df, data, "accounts")
+        print(f"Blocked user: {row.screen_name}")
