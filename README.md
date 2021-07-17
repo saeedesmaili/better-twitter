@@ -27,3 +27,16 @@ To update twitter API credentials:
 ```bash
 better-twitter --update-api
 ```
+
+### To Do
+- [x] Add "mute from file" functionality
+- [x] Add "block from file" functionality
+- [ ] Rewrite the functions in OOP style
+- [ ] Splite functions to be separated in different files and directories (instead of a single main.py file)
+- [ ] Add "block/mute retweeters of a tweet" functionality
+- [ ] Add "block/mute likes of a tweet" functionality
+- [ ] Add "check a fake user's retweets" functionality
+- [ ] Add "remove my tweets older than N days" functionality
+- [ ] Add "remove my likes older than N days" functionality
+- [ ] Add "search for tweets containing a specific word/hashtag and block/mute them"
+- [ ] Add "export an account's tweets/followers/followings/likes"
