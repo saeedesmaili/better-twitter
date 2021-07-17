@@ -17,6 +17,12 @@ better-twitter --block-file test_file.csv
 ```
 Note: The csv file should have two columns named `user_id` and `screen_name`.
 
+To mute multiple users of a file:
+```bash
+better-twitter --mute-file test_file.csv
+```
+Note: The csv file should have two columns named `user_id` and `screen_name`.
+
 To update twitter API credentials:
 ```bash
 better-twitter --update-api

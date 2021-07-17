@@ -8,8 +8,8 @@ with open(path.join(HERE, "README.md"), encoding="utf-8") as f:
 
 setup(
     name="better-twitter",
-    version="0.0.18",
-    description="A python package to block fake and toxic twitter accounts in an automated and easy way.",
+    version="0.0.19",
+    description="A python package to block and mute fake and toxic twitter accounts in an automated and easy way.",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/saeedesmaili/better-twitter",

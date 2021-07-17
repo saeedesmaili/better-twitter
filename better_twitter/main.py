@@ -28,7 +28,9 @@ def cursive_command():
 
     args = parse()
     if args.block_file:
-        block_from_file(api=api, file_path=args.block_file, df_accounts=df_accounts)
+        action_from_file(api=api, file_path=args.block_file, df_accounts=df_accounts, action="block")
+    elif args.mute_file:
+        action_from_file(api=api, file_path=args.mute_file, df_accounts=df_accounts, action="mute")
     elif args.update_api:
         update_api()
 
@@ -100,6 +102,13 @@ def parse():
         help="Block multiple users from a file at once."
     )
     parser.add_argument(
+        "--mute-file", 
+        action="store", 
+        type=str, 
+        required=False,
+        help="Mute multiple users from a file at once."
+    )
+    parser.add_argument(
         "--update-api", 
         action="store_true", 
         required=False,
@@ -122,20 +131,28 @@ def update_db(data, table_name, columns=[]):
     return df.shape[0]
 
 
-def block_from_file(api, file_path, df_accounts):
+def action_from_file(api, file_path, df_accounts, action="block"):
     df = pd.read_csv(file_path)
     if "user_id" not in df.columns or "screen_name" not in df.columns:
         raise Exception("The file should have both user_id and screen_name columns.")
     df["user_id"] = df["user_id"].astype(int)
-    print(f"Blocking {df.shape[0]} users from file ...")
+    if action == "block":
+        print(f"Blocking {df.shape[0]} users from file ...")
+    elif action == "mute":
+        print(f"Muting {df.shape[0]} users from file ...")
     for i, row in df.iterrows():
         if row["user_id"] in df_accounts["user_id"].values:
-            print(f"User is already blocked: {row['screen_name']}")
+            print(f"User is already blocked or muted: {row['screen_name']}")
             continue
         try:
-            response = api.CreateBlock(user_id=row.user_id)
+            if action == "block":
+                response = api.CreateBlock(user_id=row.user_id)
+                status = "blocked"
+            elif action == "mute":
+                response = api.CreateMute(user_id=row.user_id)
+                status = "muted"
         except twitter.error.TwitterError as e:
-            if e.message[0]["code"] == 50:  # User not found
+            if e.message[0]["code"] in [34, 50]:  # [Sorry; that page does not exist, User not found]
                 print(f"User not found: {row['screen_name']}")
                 data = {
                     "user_id": row["user_id"],
@@ -161,9 +178,13 @@ def block_from_file(api, file_path, df_accounts):
                 "followings_count": response.friends_count,
                 "account_created_at": response.created_at,
                 "last_checked": str(pn.now()),
+                "status": status,
             }
             update_db(data, "accounts")
-            print(f"Blocked user: {row.screen_name}")
+            if action == "block":
+                print(f"Blocked user: {row.screen_name}")
+            elif action == "mute":
+                print(f"Muted user: {row.screen_name}")
     return None
 
 
