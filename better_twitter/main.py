@@ -147,7 +147,7 @@ def block_from_file(api, file_path, df_accounts):
                 print("API rate limit. Waiting for 5 minutes ...")
                 time.sleep(300)
                 pass
-            elif e.message[0]["code"] == 89:  # Invalid or expired token
+            elif e.message[0]["code"] in [89, 32]:  # [Invalid or expired token, Could not authenticate you]
                 print(e.message[0]["message"])
                 print("You need to add valid tokens with following command first:\nbetter-twitter --update-api")
                 return None
