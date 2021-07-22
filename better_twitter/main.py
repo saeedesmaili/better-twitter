@@ -91,8 +91,7 @@ def update_api():
 
 
 def parse():
-    parser = argparse.ArgumentParser(
-        description="Make twitter a better place with multiple options.")
+    parser = argparse.ArgumentParser(description="Make twitter a better place with multiple options.")
 
     parser.add_argument(
         "--block-file", 
@@ -152,7 +151,7 @@ def action_from_file(api, file_path, df_accounts, action="block"):
                 response = api.CreateMute(user_id=row.user_id)
                 status = "muted"
         except twitter.error.TwitterError as e:
-            if e.message[0]["code"] in [34, 50]:  # [Sorry; that page does not exist, User not found]
+            if e.message[0]["code"] in [34, 50]:  # [That page does not exist, User not found]
                 print(f"User not found: {row['screen_name']}")
                 data = {
                     "user_id": row["user_id"],
