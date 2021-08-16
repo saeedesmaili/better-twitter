@@ -17,6 +17,9 @@ DB_FILE = "data.db"
 def cursive_command():
     api = load_api()
 
+    my_followings = api.GetFriends()
+    my_followings = [item.id for item in my_followings]
+
     db_path = path.expanduser(path.join(CONFIG_DIR, DB_FILE))
     con = sqlite3.connect(db_path)
 
@@ -28,9 +31,9 @@ def cursive_command():
 
     args = parse()
     if args.block_file:
-        action_from_file(api=api, file_path=args.block_file, df_accounts=df_accounts, action="block")
+        action_from_file(api=api, file_path=args.block_file, df_accounts=df_accounts, my_followings=my_followings, action="block")
     elif args.mute_file:
-        action_from_file(api=api, file_path=args.mute_file, df_accounts=df_accounts, action="mute")
+        action_from_file(api=api, file_path=args.mute_file, df_accounts=df_accounts, my_followings=my_followings, action="mute")
     elif args.update_api:
         update_api()
 
@@ -130,7 +133,7 @@ def update_db(data, table_name, columns=[]):
     return df.shape[0]
 
 
-def action_from_file(api, file_path, df_accounts, action="block"):
+def action_from_file(api, file_path, df_accounts, my_followings, action="block"):
     df = pd.read_csv(file_path)
     if "user_id" not in df.columns or "screen_name" not in df.columns:
         raise Exception("The file should have both user_id and screen_name columns.")
@@ -140,7 +143,10 @@ def action_from_file(api, file_path, df_accounts, action="block"):
     elif action == "mute":
         print(f"Muting {df.shape[0]} users from file ...")
     for i, row in df.iterrows():
-        if row["user_id"] in df_accounts["user_id"].values:
+        if row["user_id"] in my_followings:
+            print(f"You are following user_id={row['user_id']}; Skipped.")
+            continue
+        elif row["user_id"] in df_accounts["user_id"].values:
             print(f"User is already blocked or muted: {row['screen_name']}")
             continue
         try:
